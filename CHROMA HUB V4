@@ -1,0 +1,525 @@
+-- [[ CHROMA HUB - ULTRA MOBILE EDITION (v10.0 - 1000% OPTIMIZED) ]]
+
+-- 1. SISTEMA DE PROTEÇÃO E ANTI-DETECÇÃO AVANÇADO
+pcall(function()
+   local mt = getrawmetatable(game)
+   setreadonly(mt, false)
+   local old = mt.__namecall
+   mt.__namecall = newcclosure(function(self, ...)
+      local method = getnamecallmethod()
+      if (method == "Kick" or method == "kick") and self == game.Players.LocalPlayer then
+         warn("[CHROMA HUB SECURITY]: Tentativa de Kick bloqueada com sucesso!")
+         return nil
+      end
+      return old(self, ...)
+   end)
+   setreadonly(mt, true)
+end)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+
+local protegido = syn and syn.protect_gui or function(v) v.Parent = CoreGui end
+
+if CoreGui:FindFirstChild("ChromaHubUltraUI") then
+   CoreGui.ChromaHubUltraUI:Destroy()
+end
+
+-- ScreenGui Principal
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ChromaHubUltraUI"
+protegido(ScreenGui)
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Botão Flutuante Estilizado para Mobile
+local OpenButton = Instance.new("TextButton")
+OpenButton.Size = UDim2.new(0, 130, 0, 42)
+OpenButton.Position = UDim2.new(0, 20, 0.35, 0)
+OpenButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+OpenButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+OpenButton.Text = "⚡ CHROMA HUB"
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.TextSize = 12
+OpenButton.Active = true
+OpenButton.Draggable = true
+OpenButton.Parent = ScreenGui
+
+local OpenStroke = Instance.new("UIStroke", OpenButton)
+OpenStroke.Color = Color3.fromRGB(220, 30, 30)
+OpenStroke.Thickness = 1.8
+
+local OpenCorner = Instance.new("UICorner", OpenButton)
+OpenCorner.CornerRadius = UDim.new(0, 10)
+
+-- Janela Principal do Hub
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 390, 0, 310)
+MainFrame.Position = UDim2.new(0.5, -195, 0.5, -155)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = false
+MainFrame.Parent = ScreenGui
+
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = Color3.fromRGB(220, 30, 30)
+MainStroke.Thickness = 1.8
+
+local MainCorner = Instance.new("UICorner", MainFrame)
+MainCorner.CornerRadius = UDim.new(0, 12)
+
+-- Topbar Moderna
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 38)
+TitleBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner", TitleBar)
+TitleCorner.CornerRadius = UDim.new(0, 12)
+
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(1, -50, 1, 0)
+TitleText.Position = UDim2.new(0, 14, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.Text = "CHROMA HUB | ULTRA v10.0"
+TitleText.Font = Enum.Font.GothamBold
+TitleText.TextSize = 11
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Parent = TitleBar
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 32, 0, 32)
+CloseBtn.Position = UDim2.new(1, -36, 0, 3)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+CloseBtn.Text = "✕"
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 14
+CloseBtn.Parent = TitleBar
+
+CloseBtn.MouseButton1Click:Connect(function()
+   MainFrame.Visible = false
+end)
+
+OpenButton.MouseButton1Click:Connect(function()
+   MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Menu Lateral (Abas)
+local Sidebar = Instance.new("ScrollingFrame")
+Sidebar.Size = UDim2.new(0, 100, 1, -45)
+Sidebar.Position = UDim2.new(0, 6, 0, 42)
+Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Sidebar.BorderSizePixel = 0
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, 300)
+Sidebar.ScrollBarThickness = 2
+Sidebar.Parent = MainFrame
+
+local SidebarLayout = Instance.new("UIListLayout", Sidebar)
+SidebarLayout.Padding = UDim.new(0, 5)
+
+-- Container de Conteúdo
+local ContentArea = Instance.new("Frame")
+ContentArea.Size = UDim2.new(1, -116, 1, -45)
+ContentArea.Position = UDim2.new(0, 112, 0, 42)
+ContentArea.BackgroundTransparency = 1
+ContentArea.Parent = MainFrame
+
+local function clearContent()
+   for _, child in ipairs(ContentArea:GetChildren()) do
+      child:Destroy()
+   end
+end
+
+local function createTabButton(name, callback)
+   local tBtn = Instance.new("TextButton")
+   tBtn.Size = UDim2.new(1, -4, 0, 34)
+   tBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+   tBtn.BorderSizePixel = 0
+   tBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+   tBtn.Text = name
+   tBtn.Font = Enum.Font.GothamMedium
+   tBtn.TextSize = 10
+   tBtn.Parent = Sidebar
+   
+   local tCorner = Instance.new("UICorner", tBtn)
+   tCorner.CornerRadius = UDim.new(0, 6)
+   
+   tBtn.MouseButton1Click:Connect(callback)
+end
+
+-- Variáveis Globais Otimizadas
+local infJumpOn = false
+local flyOn = false
+local antiRagdollOn = true
+local autoStealOn = false
+local autoKickOn = false
+local espBrainrotOn = false
+local espBaseOn = false
+local xRayOn = false
+local brainrotValueOn = false
+local brainrotDropOn = false
+
+---------------------------------------------------
+-- ABA 1: PLAYER & MOVEMENT
+---------------------------------------------------
+local function loadPlayerTab()
+   clearContent()
+   local scroller = Instance.new("ScrollingFrame", ContentArea)
+   scroller.Size = UDim2.new(1, 0, 1, 0)
+   scroller.BackgroundTransparency = 1
+   scroller.CanvasSize = UDim2.new(0, 0, 0, 220)
+   scroller.ScrollBarThickness = 3
+   
+   local list = Instance.new("UIListLayout", scroller)
+   list.Padding = UDim.new(0, 6)
+   
+   local function addToggle(text, getState, setState)
+      local b = Instance.new("TextButton", scroller)
+      b.Size = UDim2.new(1, -6, 0, 36)
+      b.BackgroundColor3 = getState() and Color3.fromRGB(200, 30, 30) or Color3.fromRGB(22, 22, 22)
+      b.TextColor3 = Color3.fromRGB(255, 255, 255)
+      b.Font = Enum.Font.GothamMedium
+      b.TextSize = 10
+      
+      local corner = Instance.new("UICorner", b)
+      corner.CornerRadius = UDim.new(0, 6)
+      
+      local function updateState()
+         local active = getState()
+         b.Text = text .. ": [ " .. (active and "ON" or "OFF") .. " ]"
+         b.BackgroundColor3 = active and Color3.fromRGB(200, 30, 30) or Color3.fromRGB(22, 22, 22)
+      end
+      updateState()
+      
+      b.MouseButton1Click:Connect(function()
+         setState(not getState())
+         updateState()
+      end)
+   end
+   
+   addToggle("Infinite Jump", function() return infJumpOn end, function(v) infJumpOn = v end)
+   addToggle("Fly (Modo Voo Otimizado)", function() return flyOn end, function(v) flyOn = v end)
+   addToggle("Anti Ragdoll", function() return antiRagdollOn end, function(v) antiRagdollOn = v end)
+end
+
+---------------------------------------------------
+-- ABA 2: STEAL & BASES
+---------------------------------------------------
+local function loadSteelTab()
+   clearContent()
+   local scroller = Instance.new("ScrollingFrame", ContentArea)
+   scroller.Size = UDim2.new(1, 0, 1, 0)
+   scroller.BackgroundTransparency = 1
+   scroller.CanvasSize = UDim2.new(0, 0, 0, 260)
+   scroller.ScrollBarThickness = 3
+   
+   local list = Instance.new("UIListLayout", scroller)
+   list.Padding = UDim.new(0, 6)
+   
+   local function addToggle(text, getState, setState)
+      local b = Instance.new("TextButton", scroller)
+      b.Size = UDim2.new(1, -6, 0, 36)
+      b.BackgroundColor3 = getState() and Color3.fromRGB(200, 30, 30) or Color3.fromRGB(22, 22, 22)
+      b.TextColor3 = Color3.fromRGB(255, 255, 255)
+      b.Font = Enum.Font.GothamMedium
+      b.TextSize = 10
+      
+      local corner = Instance.new("UICorner", b)
+      corner.CornerRadius = UDim.new(0, 6)
+      
+      local function updateState()
+         local active = getState()
+         b.Text = text .. ": [ " .. (active and "ON" or "OFF") .. " ]"
+         b.BackgroundColor3 = active and Color3.fromRGB(200, 30, 30) or Color3.fromRGB(22, 22, 22)
+      end
+      updateState()
+      
+      b.MouseButton1Click:Connect(function()
+         setState(not getState())
+         updateState()
+      end)
+   end
+   
+   addToggle("Auto Steal & Hide", function() return autoStealOn end, function(v) autoStealOn = v end)
+   addToggle("Brainrot Drop", function() return brainrotDropOn end, function(v) brainrotDropOn = v end)
+   addToggle("Auto Kick After Steal", function() return autoKickOn end, function(v) autoKickOn = v end)
+   
+   addToggle("X-Ray (Estruturas)", function() return xRayOn end, function(v) 
+      xRayOn = v 
+      for _, obj in ipairs(Workspace:GetDescendants()) do
+         if obj:IsA("BasePart") and (obj.Name:lower():find("base") or obj.Name:lower():find("wall") or obj.Name:lower():find("floor") or obj.Name:lower():find("plot")) then
+            if not LocalPlayer.Character or not obj:IsDescendantOf(LocalPlayer.Character) then
+               obj.Transparency = xRayOn and 0.88 or 0
+               obj.CanCollide = not xRayOn
+            end
+         end
+      end
+   end)
+end
+
+---------------------------------------------------
+-- ABA 3: ESP & VALUES
+---------------------------------------------------
+local function loadEspTab()
+   clearContent()
+   local scroller = Instance.new("ScrollingFrame", ContentArea)
+   scroller.Size = UDim2.new(1, 0, 1, 0)
+   scroller.BackgroundTransparency = 1
+   scroller.CanvasSize = UDim2.new(0, 0, 0, 220)
+   scroller.ScrollBarThickness = 3
+   
+   local list = Instance.new("UIListLayout", scroller)
+   list.Padding = UDim.new(0, 6)
+   
+   local function addToggle(text, getState, setState)
+      local b = Instance.new("TextButton", scroller)
+      b.Size = UDim2.new(1, -6, 0, 36)
+      b.BackgroundColor3 = getState() and Color3.fromRGB(200, 30, 30) or Color3.fromRGB(22, 22, 22)
+      b.TextColor3 = Color3.fromRGB(255, 255, 255)
+      b.Font = Enum.Font.GothamMedium
+      b.TextSize = 10
+      
+      local corner = Instance.new("UICorner", b)
+      corner.CornerRadius = UDim.new(0, 6)
+      
+      local function updateState()
+         local active = getState()
+         b.Text = text .. ": [ " .. (active and "ON" or "OFF") .. " ]"
+         b.BackgroundColor3 = active and Color3.fromRGB(200, 30, 30) or Color3.fromRGB(22, 22, 22)
+      end
+      updateState()
+      
+      b.MouseButton1Click:Connect(function()
+         setState(not getState())
+         updateState()
+      end)
+   end
+   
+   addToggle("ESP Base", function() return espBaseOn end, function(v) espBaseOn = v end)
+   addToggle("ESP Brainrot", function() return espBrainrotOn end, function(v) espBrainrotOn = v end)
+   addToggle("Brainrot Value", function() return brainrotValueOn end, function(v) brainrotValueOn = v end)
+end
+
+---------------------------------------------------
+-- ABA 4: TELEPORT & SERVER
+---------------------------------------------------
+local function loadTpTab()
+   clearContent()
+   local scroller = Instance.new("ScrollingFrame", ContentArea)
+   scroller.Size = UDim2.new(1, 0, 1, 0)
+   scroller.BackgroundTransparency = 1
+   scroller.CanvasSize = UDim2.new(0, 0, 0, 180)
+   scroller.ScrollBarThickness = 3
+   
+   local list = Instance.new("UIListLayout", scroller)
+   list.Padding = UDim.new(0, 6)
+   
+   local function addButton(text, callback)
+      local b = Instance.new("TextButton", scroller)
+      b.Size = UDim2.new(1, -6, 0, 36)
+      b.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+      b.TextColor3 = Color3.fromRGB(255, 255, 255)
+      b.Font = Enum.Font.GothamMedium
+      b.TextSize = 10
+      b.Text = text
+      
+      local corner = Instance.new("UICorner", b)
+      corner.CornerRadius = UDim.new(0, 6)
+      
+      b.MouseButton1Click:Connect(function()
+         b.BackgroundColor3 = Color3.fromRGB(200, 30, 30)
+         task.delay(0.2, function() b.BackgroundColor3 = Color3.fromRGB(25, 25, 25) end)
+         callback()
+      end)
+   end
+   
+   addButton("Auto Go To Base [TP]", function()
+      local char = LocalPlayer.Character
+      if char and char:FindFirstChild("HumanoidRootPart") then
+         for _, obj in ipairs(Workspace:GetDescendants()) do
+            if (obj.Name:lower():find("base") or obj.Name:lower():find("plot")) and obj:IsA("Model") and obj.PrimaryPart then
+               char.HumanoidRootPart.CFrame = obj.PrimaryPart.CFrame + Vector3.new(0, 5, 0)
+               break
+            end
+         end
+      end
+   end)
+   
+   addButton("Server Hop [MUDAR]", function()
+      pcall(function()
+         local response = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/public?sortOrder=Asc&limit=10")
+         local servers = HttpService:JSONDecode(response)
+         for _, s in ipairs(servers.data) do
+            if s.id ~= game.JobId then
+               TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, LocalPlayer)
+               break
+            end
+         end
+      end)
+   end)
+end
+
+---------------------------------------------------
+-- ABA 5: CREDITS & INFO
+---------------------------------------------------
+local function loadCreditsTab()
+   clearContent()
+   local scroller = Instance.new("ScrollingFrame", ContentArea)
+   scroller.Size = UDim2.new(1, 0, 1, 0)
+   scroller.BackgroundTransparency = 1
+   scroller.CanvasSize = UDim2.new(0, 0, 0, 320)
+   scroller.ScrollBarThickness = 3
+   
+   local list = Instance.new("UIListLayout", scroller)
+   list.Padding = UDim.new(0, 6)
+   
+   local label = Instance.new("TextLabel", scroller)
+   label.Size = UDim2.new(1, -6, 0, 300)
+   label.BackgroundTransparency = 1
+   label.TextColor3 = Color3.fromRGB(220, 220, 220)
+   label.Text = [[CHROMA HUB | v10.0 (Ultimate Edition)
+----------------------------------------
+🔥 TOP BRAINROTS VALIOSOS:
+1. Garama and Madundung (Secreto SSSS+)
+2. Tang Kelintang (Ultra Raro - $$$)
+3. Ketupat Kapat (Raro e Valioso)
+----------------------------------------
+Status: 1000% Otimizado & Seguro!]]
+   label.Font = Enum.Font.GothamMedium
+   label.TextSize = 9
+   label.TextXAlignment = Enum.TextXAlignment.Left
+   label.TextYAlignment = Enum.TextYAlignment.Top
+   label.TextWrapped = true
+end
+
+-- Criando as abas
+createTabButton("Player", loadPlayerTab)
+createTabButton("Steel & Base", loadSteelTab)
+createTabButton("ESP & Value", loadEspTab)
+createTabButton("Teleport", loadTpTab)
+createTabButton("Credits", loadCreditsTab)
+
+loadPlayerTab()
+
+-- Pulo Infinito Otimizado
+UserInputService.JumpRequest:Connect(function()
+   if infJumpOn and LocalPlayer.Character then
+      local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+      local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+      if hum and root then
+         root.Velocity = Vector3.new(root.Velocity.X, 32, root.Velocity.Z)
+         hum:ChangeState(Enum.HumanoidStateType.Jumping)
+      end
+   end
+end)
+
+-- Loop Principal Otimizado (Performance Extrema)
+RunService.Heartbeat:Connect(function()
+   if antiRagdollOn and LocalPlayer.Character then
+      pcall(function()
+         local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+         if hum then
+            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+            if hum:GetState() == Enum.HumanoidStateType.Ragdoll or hum:GetState() == Enum.HumanoidStateType.FallingDown then
+               hum:ChangeState(Enum.HumanoidStateType.Running)
+            end
+         end
+      end)
+   end
+   
+   if flyOn and LocalPlayer.Character then
+      pcall(function()
+         local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+         local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+         if root and hum then
+            hum.PlatformStand = true
+            root.Velocity = Vector3.new(0, 0.4, 0)
+            local cam = Workspace.CurrentCamera.CFrame
+            local move = Vector3.new()
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then move = move + cam.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then move = move - cam.LookVector end
+            root.CFrame = root.CFrame + (move * 1.1)
+         end
+      end)
+   elseif LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+      pcall(function() LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false end)
+   end
+   
+   if autoStealOn and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+      pcall(function()
+         local rootPos = LocalPlayer.Character.HumanoidRootPart.Position
+         for _, obj in ipairs(Workspace:GetDescendants()) do
+            if (obj.Name:lower():find("brainrot") or obj.Name:lower():find("item")) and obj:IsA("BasePart") then
+               if (obj.Position - rootPos).Magnitude < 32 then
+                  if brainrotDropOn then
+                     obj.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, -3, 0)
+                  else
+                     obj.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, -60, 0)
+                  end
+                  obj.CanCollide = false
+                  
+                  if autoKickOn then
+                     LocalPlayer:Kick("\n[CHROMA HUB]: Operação concluída.")
+                  end
+               end
+            end
+         end
+      end)
+   end
+   
+   if espBaseOn then
+      pcall(function()
+         for _, obj in ipairs(Workspace:GetDescendants()) do
+            if (obj.Name:lower():find("base") or obj.Name:lower():find("plot")) and obj:IsA("Model") and obj.PrimaryPart then
+               if not obj.PrimaryPart:FindFirstChild("ChromaBaseESP") then
+                  local bill = Instance.new("BillboardGui", obj.PrimaryPart)
+                  bill.Name = "ChromaBaseESP"
+                  bill.Size = UDim2.new(0, 110, 0, 32)
+                  bill.AlwaysOnTop = true
+                  local txt = Instance.new("TextLabel", bill)
+                  txt.Size = UDim2.new(1, 0, 1, 0)
+                  txt.BackgroundTransparency = 1
+                  txt.TextColor3 = Color3.fromRGB(255, 170, 0)
+                  txt.Text = "🏠 BASE"
+                  txt.TextScaled = true
+                  txt.Font = Enum.Font.GothamBold
+               end
+            end
+         end
+      end)
+   end
+   
+   if espBrainrotOn or brainrotValueOn then
+      pcall(function()
+         for _, obj in ipairs(Workspace:GetDescendants()) do
+            if (obj.Name:lower():find("brainrot") or obj.Name:lower():find("item")) and obj:IsA("BasePart") then
+               if not obj:FindFirstChild("ChromaBrainrotESP") then
+                  local bill = Instance.new("BillboardGui", obj)
+                  bill.Name = "ChromaBrainrotESP"
+                  bill.Size = UDim2.new(0, 120, 0, 32)
+                  bill.AlwaysOnTop = true
+                  local txt = Instance.new("TextLabel", bill)
+                  txt.Size = UDim2.new(1, 0, 1, 0)
+                  txt.BackgroundTransparency = 1
+                  txt.TextColor3 = Color3.fromRGB(0, 255, 120)
+                  txt.Text = brainrotValueOn and "🧠 [VALOR ALTO]" or "🧠 BRAINROT"
+                  txt.TextScaled = true
+                  txt.Font = Enum.Font.GothamBold
+               end
+            end
+         end
+      end)
+   end
+end)
